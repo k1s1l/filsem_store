@@ -9,10 +9,17 @@
 
 const API_BASE = process.env.TELEGRAM_API_BASE || 'https://api.telegram.org';
 
+// Адреса магазину на Railway — запасний варіант, якщо змінні середовища не задані.
+const DEFAULT_WEBAPP_URL = 'https://filsemstore-production.up.railway.app';
+
 function webAppUrl() {
-  if (process.env.WEBAPP_URL) return process.env.WEBAPP_URL;
-  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
-  return null;
+  // Прощаємо дрібні помилки у змінній: пробіли, лапки, слеш у кінці, відсутній https://
+  const clean = (v) => {
+    const t = String(v || '').trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+    if (!t) return '';
+    return /^https?:\/\//.test(t) ? t.replace(/^http:/, 'https:') : `https://${t}`;
+  };
+  return clean(process.env.WEBAPP_URL) || clean(process.env.RAILWAY_PUBLIC_DOMAIN) || DEFAULT_WEBAPP_URL;
 }
 
 export function startBot() {
